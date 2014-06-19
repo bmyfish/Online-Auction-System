@@ -1,0 +1,120 @@
+What I Have Done:
+_________________
+
+Generally, I accomplish these three major phases. I write 5 code files all using C, a Makefile and a README. My implementation strictly follows all the tasks defined in this assignment. They can meet all the requirements and function normally on nunki server.
+	
+File Description:
+-----------------
+
+	1. auctionserver.c
+	-------------
+		=> In Phase 1. This file initiate the authentication server first by load Registration.txt. It will store the valid registration information in a link list(if account number is not start with 4519, then it will not store this account information). Then the user can send their requests by TCP connections. And the server decide whether the request is valid if it is a valid user then store the valid user information including type, port number which will used in later phases, IP address, user name and send id in archive.txt, and reply according to its type.
+		=> In Phase 2. It initiate the TCP server and wait for the incoming item list from authenticated seller, and store it in the broadcastlist.txt.
+		=> In Phase 3. It load archive.txt to find the authenticated bidders’ ip addresses and UDP ports then establish a connection with the bidder, send the broadcastlist to them. then wait for their reply(their bid price for the item they want). Then the server decide whether item will be sold. And send back the auction result to all users via TCP connections.
+		
+	2. bidder1.c
+	----------------------
+		=> In Phase 1. It read from the bidderPass1.txt file to get its login information,and then establish a TCP connection with auction server. If it is rejected by the auction server, then it will terminate the execution. Otherwise move to phase 3.
+		=> In Phase 3. It first bind the udp port, waiting for the incoming item list, then cross check the item with the item the bidder want and then send back the match item and the bidding price to the auction server. Then establish a TCP socket and wait for the server make the decision.
+	3. bidder2.c
+	----------------
+		=> The same as bidder1 except they read from different input file. 
+
+	4. seller1.c
+	-----------------
+		=> In Phase 1. It read from the sellerPass1.txt file to get its login information,and then establish a TCP connection with auction server. If it is rejected by the auction server, then it will terminate the execution. Otherwise move to phase 2.
+		=> In Phase 2. It read from itemlist1.txt and send it to auction server via TCP connection. Then move to phase 3.
+		=> In Phase 3. It create a TCP socket and wait for the server’s decision.
+	5. seller2.c
+	-----------
+		=> The same as seller1 except they read from different input file. 
+			
+	6. makefile:
+	-------------
+		=> This file is used compile the code and clean them up as well.
+		=> Usage: Compiling the code: # make
+		=> Usage: Removing the object files: # make clean
+	
+	7. README:
+	-----------
+		=> Contains the project details and steps to execute it.
+
+Message Exchange Format:
+-----------------------
+
+	=> Phase-1:
+		-> User sends to Auction Server: <USER#>Login#type username password account
+		
+		Examples:
+			-> Bidder1 to Auction Server: <Bidder#1>Login#1 username password account
+			-> Seller1 to Auction Server: <Seller#1>Login#2 username password account
+		
+		-> Auction Server to user: Reply# (port) (ip)
+		Examples:
+			-> accepted seller: Accepted# 1228 IP
+			-> rejected seller: Rejected#
+
+	=> Phase-2:
+		-> Seller sends to Auction Server: USER#\nitemlist
+		
+		Examples:
+			->Seller#1\nMatt\nDress1 50\n
+		
+	
+	=> Phase-3:
+		-> Auction Server to bidder: broadcastlist
+		Examples:			
+			->Matt Dress1 50
+
+		-> Bidder sends to Auction Server: <USER#> biddinfo
+		Examples:
+			-> bidder 1 to auction Server:Seller#1 Matt Dress1 60
+				
+		-> Auction Server to User: Item “owner item” was sold at “bidprice”\n  
+		Examples:
+			-> Auction server sends to Seller1: Item Matt Dress1 was sold at 60
+
+
+Execution Instructions:
+-----------------------
+	=> Please follow the below steps to execute the project.
+	
+	Step-1: Compiling the code
+			# make
+
+	Step-2: remove broadcastlist.txt and archive.txt 	
+			# rm broadcastlist.txt archive.txt
+
+	Step-3: Please remember to include Registration.txt, bidderPass1.txt, bidderPass2.txt, sellerPass1.txt, sellerPss2.txt in the concerned location otherwise the code will display unwanted errors.
+	
+	Step-4: Executing the code
+			=> Open 5 separate terminals and execute the below commands in each of them.
+				
+				=> This should be the first command to be executed to initiate the Auction server.
+				
+					# auctionserver
+				
+				=> Others are executed randomly, execute them all within 10 seconds. 
+					# bidder1 
+					# bidder2
+					# seller1
+					# seller2
+	
+	Step 5: Cleaning the executables
+			# make clean
+
+		
+Project Assumptions and Limitations:
+-------------------------------------
+
+		=> There must be only 2 bidders and 2 sellers at any given point of time in the lifetime of the project.
+		=> The maximum buffer character size will not exceed 256.
+		=> Auction Server must always run first.
+		=> No broadcastlist.txt and archive.txt should exist before execution.
+		=> Must execute all users within 10 seconds.
+		=> If two seller are authentication failed then the bidder will be terminate by ctrl c
+		=> It will take about 20 seconds to finish execution.
+
+Reused Code
+-----------
+		=> I used blocks of code from Beej's socket programming tutorial in my project. Bind(), getaddrinfo(), connect(), socket(), get_in_addr()
